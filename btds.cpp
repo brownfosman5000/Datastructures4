@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 
@@ -6,11 +7,6 @@ struct TreeNode{
 	int data;
 	TreeNode *left, *right;	
 	TreeNode(){left=NULL;right=NULL;}
-	void newNode(TreeNode*,int data);
-	bool hasNoSons(){
-		if (left == NULL && right == NULL) return true;
-		else return false;
-	}
 };
 
 void count(TreeNode*,int&);
@@ -21,19 +17,45 @@ void preorder(TreeNode*);
 void postorder(TreeNode*);
 void newNode(TreeNode*&,int);
 void remove(TreeNode*&,int);
+void freeTree(TreeNode* &tree);
+void readData(TreeNode* &tree);
+void readInstructions(TreeNode* &tree);
+void printOrders(TreeNode* tree);
+void processSets(TreeNode* &tree);
 
+ifstream fin;
 TreeNode *tree = NULL;
-
+const int EMPTY = -1;
+const int END = -999;
 int main(){
+	string set;
+	fin.open("data.txt");
 
+    while(!fin.eof())
+	 	processSets(tree);
+	return 0;
+}
+
+void processSets(TreeNode* &tree){
 	int numnodes = 0,childcount = 0;
+	
 
-	insert(tree,5);
-	insert(tree,3);
-	insert(tree,4);
-	insert(tree,7);
-	insert(tree,1);
+	readData(tree);
 
+	printOrders(tree);
+
+	//Counting nodes
+	count(tree,numnodes);
+	cout<<"There are "<<numnodes<<" in the tree currently.."<<endl<<endl;
+	children(tree,childcount);
+	
+	readInstructions(tree);
+	printOrders(tree);
+
+	freeTree(tree);
+}
+
+void printOrders(TreeNode* tree){
 	//Printing tree in various orders
 	cout<<"Inorder: ";
 	inorder(tree);
@@ -46,30 +68,57 @@ int main(){
 	cout<<"Postorder: ";
 	postorder(tree);
 	cout<<endl<<endl;
-
-
-	//Counting nodes
-	count(tree,numnodes);
-	cout<<"There are "<<numnodes<<" in the tree currently.."<<endl<<endl;
-
-	//Counting and printing amount of children for each node
-	children(tree,childcount);
-	
-
-	remove(tree,4);
-	remove(tree,1);
-	
-	cout<<endl;
-	return 0;
 }
+void readInstructions(TreeNode* &tree){
+	string instruction,node;
+
+	while(true){
+		fin>>instruction;
+		if(instruction == "Insert"){
+			fin>>node;
+			insert(tree,stoi(node));
+		}
+
+		else if(instruction == "Delete"){
+			fin>>node;
+			remove(tree,stoi(node));
+
+		}
+		else if(instruction == "End")
+			return;
+	}
+}
+void readData(TreeNode* &tree){
+	string set,node,instruction;
+	fin>>set;
+	cout<<set;
+	do{
+		fin>>node;
+		insert(tree,stoi(node));
+
+	}while(stoi(node) != -999);		
+}
+
+
 void newNode(TreeNode* &node,int data){
 	node = new TreeNode;
 	node->data = data;
 }
 
+void freeTree(TreeNode* &tree){
+	delete tree;
+	tree = NULL;
+	cout<<"Tree Freed"<<endl;
+}
+
 void insert(TreeNode* &tree,int data){
 	if(tree == NULL){
-		newNode(tree,data);
+		if(data != END){
+			cout<<"Inserting Node..."<<endl;
+			newNode(tree,data);
+		}
+		else 
+			return;
 	}
 	else{
 		if(data < tree->data){
@@ -85,30 +134,18 @@ void insert(TreeNode* &tree,int data){
 
 void remove(TreeNode* &tree,int data){
 	if(tree->data == data){
-		cout<<"Found!!"<<endl;
-
-		if(tree->hasNoSons()){
-			cout<<"Is a leaf"<<endl;
-			delete tree;
-			tree = NULL;
-			//cout<<tree->data<<endl;
-			
-		}
-
-		
+		cout<<"Deleting Node..."<<endl;
+		tree->data = EMPTY;
 	}
-	else{
-	 	if(data < tree->data){
+	else{ 
+		if(data < tree->data)
 	 		remove(tree->left,data);
-	 	}
-	 	if(data > tree->data){
+		if(data > tree->data)
 	 		remove(tree->right,data);
-	 	}
 	}
-
-	inorder(tree);cout<<endl;
 	return;
 }
+
 
 void inorder(TreeNode* tree){
 	if(tree == NULL){
@@ -116,7 +153,8 @@ void inorder(TreeNode* tree){
 	}
 	else{
 		inorder(tree->left);
-		cout<<tree->data;
+		if (tree->data != EMPTY)
+			cout<<tree->data<<", ";
 		inorder(tree->right);
 	}
 
@@ -129,7 +167,8 @@ void postorder(TreeNode* tree){
 	else{
 		inorder(tree->left);
 		inorder(tree->right);
-		cout<<tree->data;
+		if(tree->data != EMPTY) 
+			cout<<tree->data<<", ";
 	}
 
 }
@@ -141,7 +180,8 @@ void preorder(TreeNode* tree){
 	    return;
 	}
 	else{
-		cout<<tree->data;
+		if(tree->data != EMPTY)
+			cout<<tree->data<<", ";
 		inorder(tree->left);
 		inorder(tree->right);
 	}

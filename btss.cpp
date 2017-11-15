@@ -16,7 +16,11 @@ int main(){
 	insert(2,bintree);
 	insert(6,bintree);
 	insert(9,bintree);
+
 	printingTree(bintree);
+	remove(9,bintree);
+	printingTree(bintree);
+
 }
 void initializeTree(int bintree[]){
 	bintree[0] = ROOT;
@@ -40,7 +44,7 @@ void insert(int data,int bintree[]){
 
 	else{
 		while(!placed){
-			//cout<<"hey";
+			//If less go 2*i
 			if(data < bintree[i]){
 				if(bintree[2*i] == EMPTY){
 					bintree[2*i] = data;
@@ -49,12 +53,7 @@ void insert(int data,int bintree[]){
 				else
 					i++;
 			}
-			else break;
-		}
-
-		//
-		while(!placed){
-			if(data > bintree[i]){
+			else if(data > bintree[i]){
 
 				if(bintree[2*i+1] == EMPTY){
 					bintree[2*i+1] = data;
@@ -77,7 +76,6 @@ void remove(int data,int bintree[]){
 	bool found = false;
 
 	while(!found){
-		//cout<<"hey";
 		if(data < bintree[i]){
 			if(bintree[2*i] == data){
 				bintree[2*i] = EMPTY;
