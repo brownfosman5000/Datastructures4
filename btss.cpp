@@ -1,25 +1,50 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
-void insert(int,int[]);
+void insert(int,int[],int);
 void initializeTree(int[]);
 void printingTree(int [] );
-void remove(int ,int[] );
-const int NODES = 20;
+void remove(int ,int[],int);
+void inorder(int bintree[],int index);
+void processSets(int []);
+void readData(int []);
+void printOrders(int[]);
+void readInstructions(int bintree[]);
+
+const int NODES = 1000000;
 const int ROOT = 0;
 const int EMPTY = -1;
+const int START = 1;
+const int END = -999;
+ifstream fin;
+
+
 int main(){
+	fin.open("data.txt");
+
 	int bintree[NODES];
 	initializeTree(bintree);
+	//while(!fin.eof)
+		processSets(bintree);
 
-	insert(5,bintree);
-	insert(2,bintree);
-	insert(6,bintree);
-	insert(9,bintree);
 
-	printingTree(bintree);
-	remove(9,bintree);
-	printingTree(bintree);
+}
+void processSets(int bintree[]){
+	int numnodes = 0,childcount = 0;
+	
+
+	readData(bintree);
+
+	printOrders(bintree);
+
+	// //Counting nodes
+	// count(bintree,numnodes);
+	// cout<<"There are "<<numnodes<<" in the tree currently.."<<endl;
+	// children(bintree,childcount);
+
+	readInstructions(bintree);
+	printOrders(bintree);
 
 }
 void initializeTree(int bintree[]){
@@ -29,77 +54,100 @@ void initializeTree(int bintree[]){
 	}
 }
 
-void printingTree(int bintree[]){
-	for(int i = 0;i<NODES;i++){
-		cout<<bintree[i];
-	}
-	cout<<endl;
+
+void readData(int bintree[]){
+	string set,node;
+	fin>>set;
+	cout<<set<<endl;
+	do{
+		fin>>node;
+		insert(stoi(node),bintree,START);
+
+	}while(stoi(node) != END);		
 }
-void insert(int data,int bintree[]){
-	//Starting place
-	int i = 1;
-	bool placed = false;
+
+
+void readInstructions(int bintree[]){
+	string instruction,node;
+
+	while(true){
+		fin>>instruction;
+		if(instruction == "Insert"){
+			fin>>node;
+			insert(stoi(node),bintree,START);
+		}
+
+		else if(instruction == "Delete"){
+			fin>>node;
+			remove(stoi(node),bintree,START);
+
+		}
+		else if(instruction == "End")
+			return;
+	}
+}
+
+void insert(int data,int bintree[],int index){
 	//If empty initialize 1st
-	if(bintree[1] == EMPTY) bintree[1] = data;
+	if(index > NODES) return;
+	if(data == END) return;
+	if(bintree[index] == EMPTY) bintree[index] = data;
 
 	else{
-		while(!placed){
-			//If less go 2*i
-			if(data < bintree[i]){
-				if(bintree[2*i] == EMPTY){
-					bintree[2*i] = data;
-					placed = true;
-				}
-				else
-					i++;
-			}
-			else if(data > bintree[i]){
-
-				if(bintree[2*i+1] == EMPTY){
-					bintree[2*i+1] = data;
-					placed = true;
-				}
-				else
-					i++;
-			}
-			else break;
-		}
-			
-		
+		if(data > bintree[index])
+			insert(data,bintree,index*2+START);
+		else
+			insert(data,bintree,index*2);
 	}
 	return;
 }
 
-void remove(int data,int bintree[]){
-	//Starting place
-	int i = 1;
-	bool found = false;
-
-	while(!found){
-		if(data < bintree[i]){
-			if(bintree[2*i] == data){
-				bintree[2*i] = EMPTY;
-				found = true;
-				return;
-			}
-			else
-				i++;
-		}
-		else break;
+void remove(int data,int bintree[],int index){
+	if(data == bintree[index]){
+		bintree[index] = EMPTY;
 	}
-
-	//
-	while(!found){
-		if(data > bintree[i]){
-
-			if(bintree[2*i+1] == data){
-				bintree[2*i+1] = EMPTY;
-				found = true;
-				return;
-			}
-			else
-				i++;
-		}
-		else break;
+	else{
+		if(data > bintree[index])
+			remove(data,bintree,index*2+START);
+		else
+			remove(data,bintree,index*2);
+		
 	}
+}
+
+void inorder(int bintree[],int index){
+	if(bintree[index] != EMPTY){
+		inorder(bintree,2*index);
+		cout<<bintree[index]<<endl;
+		inorder(bintree,2*index+START);
+	}
+}
+void preorder(int bintree[],int index){
+	if(bintree[index] != EMPTY){
+		cout<<bintree[index]<<endl;
+		inorder(bintree,2*index);
+		inorder(bintree,2*index+START);
+	}
+}
+void postorder(int bintree[],int index){
+	if(bintree[index] != EMPTY){
+		inorder(bintree,2*index);
+		inorder(bintree,2*index+START);
+		cout<<bintree[index]<<endl;
+	}
+}
+
+void printOrders(int bintree[]){
+	//Printing tree in various orders
+	cout<<"Inorder: ";
+	inorder(bintree,START);
+	cout<<endl;
+
+	cout<<"Preorder: ";
+	preorder(bintree,START);
+	cout<<endl;
+
+	cout<<"Postorder: ";
+	postorder(bintree,START);
+	cout<<endl;
 }

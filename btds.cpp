@@ -22,6 +22,7 @@ void readData(TreeNode* &tree);
 void readInstructions(TreeNode* &tree);
 void printOrders(TreeNode* tree);
 void processSets(TreeNode* &tree);
+TreeNode* findmin(TreeNode *tree);
 
 ifstream fin;
 TreeNode *tree = NULL;
@@ -31,8 +32,10 @@ int main(){
 	string set;
 	fin.open("data.txt");
 
-    while(!fin.eof())
+    while(!fin.eof()){
 	 	processSets(tree);
+	 	cout<<endl<<endl;
+    }
 	return 0;
 }
 
@@ -46,7 +49,7 @@ void processSets(TreeNode* &tree){
 
 	//Counting nodes
 	count(tree,numnodes);
-	cout<<"There are "<<numnodes<<" in the tree currently.."<<endl<<endl;
+	cout<<"There are "<<numnodes<<" in the tree currently.."<<endl;
 	children(tree,childcount);
 	
 	readInstructions(tree);
@@ -67,13 +70,14 @@ void printOrders(TreeNode* tree){
 
 	cout<<"Postorder: ";
 	postorder(tree);
-	cout<<endl<<endl;
+	cout<<endl;
 }
 void readInstructions(TreeNode* &tree){
 	string instruction,node;
 
 	while(true){
 		fin>>instruction;
+		
 		if(instruction == "Insert"){
 			fin>>node;
 			insert(tree,stoi(node));
@@ -89,9 +93,9 @@ void readInstructions(TreeNode* &tree){
 	}
 }
 void readData(TreeNode* &tree){
-	string set,node,instruction;
+	string set,node;
 	fin>>set;
-	cout<<set;
+	cout<<set<<endl;
 	do{
 		fin>>node;
 		insert(tree,stoi(node));
@@ -133,18 +137,79 @@ void insert(TreeNode* &tree,int data){
 }
 
 void remove(TreeNode* &tree,int data){
+	if(tree == NULL) return;
 	if(tree->data == data){
-		cout<<"Deleting Node..."<<endl;
-		tree->data = EMPTY;
+		//If no sons
+		if(tree->right == NULL && tree->left == NULL){
+			cout<<"Deleting Node..."<<endl;
+			freeTree(tree);
+		}
+			// tree->data = EMPTY;
+		//If one son
+		else if(tree->right == NULL){
+			TreeNode* temp = tree;
+			tree = tree->left;
+			freeTree(temp);
+		}
+		else if(tree->left == NULL){
+			TreeNode* temp = tree;
+			tree = tree->right;
+			freeTree(temp);
+		}
+		else if(tree->left != NULL && tree->right != NULL){
+			TreeNode* min = findmin(tree);
+			tree->data = min->data;
+			remove(tree->right,min->data);
+		}
 	}
+
 	else{ 
-		if(data < tree->data)
-	 		remove(tree->left,data);
-		if(data > tree->data)
-	 		remove(tree->right,data);
+		if(tree->data != EMPTY){
+			if(data < tree->data)
+	 			remove(tree->left,data);
+			if(data > tree->data)
+	 			remove(tree->right,data);
+		}
 	}
+	
+	
+	// 	/*
+	// 		Accounting for the -1 in the tree 
+	// 		Just check left or right and continue as is
+
+	// 	*/
+	// 	else{
+			
+	//  		if(tree->left->data == data){
+	// 			cout<<"Deleting Node..."<<endl;
+	// 			tree->left->data = EMPTY;
+	// 		}
+	// 		if(tree->right->data == data){
+	// 			cout<<"Deleting Node..."<<endl;
+	// 			tree->right->data = EMPTY;
+	// 		}
+
+	// 		if(data < tree->left->data)
+	//  			remove(tree->left,data);
+	// 		if(data > tree->right->data)
+	//  			remove(tree->right,data);
+
+	// 	}	
+		
+		
+	
 	return;
 }
+
+
+TreeNode* findmin(TreeNode *tree){
+	tree = tree->right;
+	while(tree->left!=NULL){
+		tree = tree->left;
+	}
+	return tree;
+}
+
 
 
 void inorder(TreeNode* tree){
@@ -153,7 +218,7 @@ void inorder(TreeNode* tree){
 	}
 	else{
 		inorder(tree->left);
-		if (tree->data != EMPTY)
+		//if (tree->data != EMPTY)
 			cout<<tree->data<<", ";
 		inorder(tree->right);
 	}
@@ -167,7 +232,7 @@ void postorder(TreeNode* tree){
 	else{
 		inorder(tree->left);
 		inorder(tree->right);
-		if(tree->data != EMPTY) 
+		//if(tree->data != EMPTY) 
 			cout<<tree->data<<", ";
 	}
 
@@ -180,7 +245,7 @@ void preorder(TreeNode* tree){
 	    return;
 	}
 	else{
-		if(tree->data != EMPTY)
+		//if(tree->data != EMPTY)
 			cout<<tree->data<<", ";
 		inorder(tree->left);
 		inorder(tree->right);
